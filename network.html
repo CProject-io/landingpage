@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The C-Project Network (Layer 0)</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <nav class="container">
+            <a href="index.html" class="logo">Carbon<span>.</span>Project</a>
+            <div class="nav-links">
+                <a href="project.html">The Project</a>
+                <a href="network.html">The Network</a>
+                <a href="blockchain.html">The Blockchain</a>
+                <a href="https://github.com/CProject-io/LandingDocs/blob/main/CONTRIBUTING.md" target="_blank">Contribute</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <div class="container">
+                <h2 style="margin-bottom: 20px;">The Free Access Network (Layer 0)</h2>
+                <p style="text-align: center; max-width: 800px; margin: 0 auto 40px auto; color: var(--color-text-muted);">C-Project's long-term vision is the creation of a physical, decentralized, and independent communication infrastructure.</p>
+
+                <div class="grid-item" style="text-align: left;">
+                    <h3>Objective and Philosophy</h3>
+                    <p>The goal is not to replace the internet, but to offer a resilient parallel network for essential needs. We believe that access to communication and financial services is a basic right. This network is designed to be censorship-resistant and resilient to outages, ensuring that communities can stay connected and operational even if traditional infrastructures fail.</p>
+                    
+                    <h3>Technical Operation</h3>
+                    <p>The C-Project Network is built as a **mesh network** composed of its autonomous nodes. We use several protocols to achieve this:</p>
+                    <ul>
+                        <li><strong>Local Communication (Mesh):</strong> Nearby nodes communicate directly with each other using their Wi-Fi interfaces, forming a local mesh. To manage routing in this mesh, we explore protocols like CJDNS, BATMAN-adv, or Babel.</li>
+                        <li><strong>Long-Range Communication (LoRaWAN):</strong> To connect nodes or groups of nodes that are geographically distant, we plan to integrate LoRaWAN modules. This allows small data packets to be sent over long distances with minimal power consumption, ideal for transactions or short messages.</li>
+                        <li><strong>Interoperability (Layer 0):</strong> As a pure network layer, it is designed to be agnostic to the type of data it transports. This means it can serve as the infrastructure for C-Project's own blockchain, but also for nodes of other blockchains (like Bitcoin or Ethereum) that desire a more resilient and decentralized communication layer.</li>
+                    </ul>
+
+                     <h3>Auxiliary Network Services</h3>
+                     <p>For proper functioning, the network will integrate key services such as a **Decentralized DNS** for node discovery without relying on central name servers, and the use of **IPFS** for distributed storage of heavier data.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Carbon Project. Building a decentralized future.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
