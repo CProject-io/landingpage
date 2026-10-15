@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How C-Project Works</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .page-intro{text-align:center; max-width:800px; margin:0 auto 20px; color:var(--color-text-muted);}
+        .section-block{margin-bottom:90px;}
+        .section-block h3{font-size:1.75rem; margin-bottom:10px;}
+        .section-note{color:var(--color-text-muted); max-width:700px; margin:0 auto 35px;}
+        .diagram-frame{background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:12px; padding:28px; overflow-x:auto;}
+        figure{margin:0; display:flex; flex-direction:column; gap:14px;}
+        figure svg{width:100%; height:auto; display:block; min-width:560px;}
+        figcaption{font-size:0.9rem; color:var(--color-text-muted); text-align:center;}
+
+        svg text{font-family:'Poppins',sans-serif; fill:var(--color-text);}
+        svg .mono{font-family:'IBM Plex Mono',monospace;}
+        svg .lbl{font-size:20px;}
+        svg .lbl-sm{font-size:16px; fill:var(--color-text-muted);}
+        svg .lbl-title{font-size:15px; letter-spacing:.04em; fill:var(--color-text-muted);}
+        .box{fill:var(--color-bg); stroke:var(--color-border); stroke-width:1.5;}
+        .box-accent{stroke:var(--color-primary);}
+        .box-dashed{fill:none; stroke:var(--color-border); stroke-width:1.5; stroke-dasharray:6 5;}
+        .flow-line{stroke:var(--color-border); stroke-width:1.5; fill:none;}
+        .flow-line-accent{stroke:var(--color-primary);}
+        .flow-line-warn{stroke:#e2665b; stroke-dasharray:5 4;}
+
+        .pog-trigger{cursor:pointer;}
+        .pog-trigger rect{transition:fill .15s;}
+        .pog-trigger:hover rect, .pog-trigger:focus-visible rect{fill:#2f3618;}
+        .pog-trigger:focus-visible{outline:2px solid var(--color-primary); outline-offset:3px;}
+        .pog-trigger .hint{fill:var(--color-primary); font-family:'IBM Plex Mono',monospace;}
+
+        .pog-detail{margin-top:24px; border-top:1px solid var(--color-border); padding-top:24px;}
+        .pog-steps{display:grid; gap:16px;}
+        .pog-step{display:grid; grid-template-columns:30px 1fr; gap:14px; align-items:start;}
+        .pog-step .n{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--color-primary); border:1px solid var(--color-primary); border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+        .pog-step p{margin:0; font-size:0.95rem; line-height:1.6; color:var(--color-text-muted);}
+        .pog-step strong{color:var(--color-text);}
+
+        .bars{display:flex; gap:24px; margin-top:20px; flex-wrap:wrap;}
+        .bar-case{flex:1; min-width:180px;}
+        .bar-case .case-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px; display:block;}
+        .bar-track{position:relative; height:60px; background:var(--color-bg); border:1px solid var(--color-border); border-radius:6px;}
+        .bar-tol{position:absolute; top:0; bottom:0; background:rgba(167,223,1,.12); border-left:1px dashed var(--color-primary); border-right:1px dashed var(--color-primary);}
+        .bar-fill{position:absolute; bottom:4px; width:16px; border-radius:3px 3px 0 0;}
+        .bar-fill.measured{background:var(--color-text-muted);}
+        .bar-fill.estimated{background:var(--color-text); opacity:.5;}
+        .bar-case.ok .case-label{color:var(--color-primary);}
+        .bar-case.bad .case-label{color:#e2665b;}
+        .bar-case.bad .bar-tol{border-color:#e2665b; background:rgba(226,102,91,.12);}
+
+        .tabs{display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; justify-content:center;}
+        .tab-btn{font-family:'IBM Plex Mono',monospace; font-size:0.85rem; background:transparent; color:var(--color-text-muted); border:2px solid var(--color-border); border-radius:999px; padding:10px 22px; cursor:pointer; transition:all .3s ease;}
+        .tab-btn[aria-pressed="true"]{background:var(--color-primary); color:var(--color-bg); border-color:var(--color-primary);}
+        .tab-btn:hover{border-color:var(--color-primary); color:var(--color-primary);}
+        .tab-btn[aria-pressed="true"]:hover{color:var(--color-bg);}
+        .tab-btn:focus-visible{outline:2px solid var(--color-primary); outline-offset:2px;}
+
+        [hidden]{display:none!important;}
+        @media (max-width:768px){ .section-block{margin-bottom:70px;} }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="container">
+            <a href="index.html" class="logo">Carbon<span>.</span>Project</a>
+            <div class="nav-links">
+                <a href="project.html">The Project</a>
+                <a href="network.html">The Network</a>
+                <a href="blockchain.html">The Blockchain</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="index.html#impact">Impact</a>
+                <a href="index.html#verticals">Verticals</a>
+                <a href="index.html#technical-document">Docs</a>
+                <a href="https://github.com/CProject-io/LandingDocs/blob/main/CONTRIBUTING.md" target="_blank">Contribute</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section style="padding-bottom:40px;">
+            <div class="container">
+                <h2>How C-Project Works</h2>
+                <p class="page-intro">Two mechanisms, one diagram each: what happens inside a physical node, and what changes when another blockchain's traffic — not C-Project's own — travels this network instead of the Internet.</p>
+            </div>
+        </section>
+
+        <section style="padding-top:0;">
+            <div class="container">
+
+                <div class="section-block">
+                    <h3>1. Anatomy of a Node</h3>
+                    <p class="section-note">One solar panel, one Raspberry Pi, but three services running inside a single Linux image. Select "PoG validation" below to see how the network decides whether reported energy is real.</p>
+                    <div class="diagram-frame">
+                        <figure>
+                            <svg viewBox="0 0 640 560" role="img" aria-label="Diagram: the renewable generator powers the sensor, which signs the measurement and passes it to the node OS; inside the OS, the energy auditor feeds the PoG chain client while the mesh networking daemon runs in parallel; the output splits into mesh network access on one side and PoG validation on the other, which ends in tokens and a governance vote.">
+                                <defs>
+                                    <marker id="arrow-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                                        <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+                                    </marker>
+                                </defs>
+
+                                <rect class="box box-accent" x="190" y="26" width="260" height="54" rx="6"/>
+                                <text class="lbl" x="320" y="48" text-anchor="middle">Renewable generator</text>
+                                <text class="lbl-sm" x="320" y="68" text-anchor="middle">solar panel / wind turbine</text>
+
+                                <line class="flow-line" x1="320" y1="80" x2="320" y2="112" marker-end="url(#arrow-a)"/>
+                                <text class="lbl-sm mono" x="340" y="100">measures</text>
+
+                                <rect class="box box-accent" x="190" y="112" width="260" height="54" rx="6"/>
+                                <text class="lbl" x="320" y="134" text-anchor="middle">Sensor + auditor</text>
+                                <text class="lbl-sm mono" x="320" y="154" text-anchor="middle">signs E_measured</text>
+
+                                <line class="flow-line" x1="320" y1="166" x2="320" y2="196" marker-end="url(#arrow-a)"/>
+
+                                <rect class="box-dashed" x="56" y="196" width="528" height="150" rx="8"/>
+                                <text class="lbl-title mono" x="76" y="220">NODE OS — custom Linux image</text>
+
+                                <rect class="box box-accent" x="76" y="236" width="150" height="80" rx="6"/>
+                                <text class="lbl" x="151" y="270" text-anchor="middle">Mesh daemon</text>
+                                <text class="lbl-sm mono" x="151" y="290" text-anchor="middle">CJDNS / BATMAN</text>
+
+                                <rect class="box" x="245" y="236" width="150" height="80" rx="6"/>
+                                <text class="lbl" x="320" y="270" text-anchor="middle">PoG client</text>
+                                <text class="lbl-sm mono" x="320" y="290" text-anchor="middle">own chain</text>
+
+                                <rect class="box box-accent" x="414" y="236" width="150" height="80" rx="6"/>
+                                <text class="lbl" x="489" y="270" text-anchor="middle">Auditor → oracle</text>
+                                <text class="lbl-sm mono" x="489" y="290" text-anchor="middle">weather + specs</text>
+
+                                <line class="flow-line" x1="414" y1="276" x2="398" y2="276" marker-end="url(#arrow-a)"/>
+                                <text class="lbl-sm mono" x="406" y="230" text-anchor="middle">E_estimated</text>
+
+                                <line class="flow-line" x1="320" y1="346" x2="320" y2="372" />
+                                <line class="flow-line" x1="151" y1="372" x2="489" y2="372" />
+                                <line class="flow-line" x1="151" y1="372" x2="151" y2="402" marker-end="url(#arrow-a)"/>
+                                <line class="flow-line" x1="489" y1="372" x2="489" y2="402" marker-end="url(#arrow-a)"/>
+
+                                <rect class="box box-accent" x="41" y="402" width="220" height="56" rx="6"/>
+                                <text class="lbl" x="151" y="427" text-anchor="middle">Parallel mesh network</text>
+                                <text class="lbl-sm mono" x="151" y="447" text-anchor="middle">other C-Project nodes</text>
+
+                                <g class="pog-trigger" tabindex="0" role="button" aria-expanded="false" aria-controls="pog-detail" id="pog-trigger">
+                                    <rect class="box box-accent" x="379" y="402" width="220" height="56" rx="6"/>
+                                    <text class="lbl" x="489" y="427" text-anchor="middle">PoG validation</text>
+                                    <text class="lbl-sm hint" x="489" y="447" text-anchor="middle">3 layers — select to expand</text>
+                                </g>
+
+                                <line class="flow-line" x1="151" y1="458" x2="151" y2="484" marker-end="url(#arrow-a)"/>
+                                <line class="flow-line" x1="489" y1="458" x2="489" y2="484" marker-end="url(#arrow-a)"/>
+
+                                <rect class="box" x="41" y="484" width="220" height="56" rx="6"/>
+                                <text class="lbl" x="151" y="509" text-anchor="middle">Interoperates with other</text>
+                                <text class="lbl-sm mono" x="151" y="527" text-anchor="middle">blockchains (via tunnel)</text>
+
+                                <rect class="box box-accent" x="379" y="484" width="220" height="56" rx="6"/>
+                                <text class="lbl" x="489" y="509" text-anchor="middle">Tokens + vote</text>
+                                <text class="lbl-sm mono" x="489" y="527" text-anchor="middle">DAO governance</text>
+                            </svg>
+                            <figcaption>The same Linux image hosts all three node services; PoG validation is the only thing that decides whether reported energy counts toward the reward.</figcaption>
+                        </figure>
+
+                        <div class="pog-detail" id="pog-detail" hidden>
+                            <div class="pog-steps">
+                                <div class="pog-step"><span class="n">1</span><p><strong>Direct measurement.</strong> The sensor measures the energy generated and cryptographically signs the reading before sending it to the node's auditor.</p></div>
+                                <div class="pog-step"><span class="n">2</span><p><strong>Contextual estimation.</strong> The auditor cross-references the generator's GPS location and technical specs with weather data (an external oracle) to calculate how much energy it should have produced.</p></div>
+                                <div class="pog-step"><span class="n">3</span><p><strong>Reconciliation.</strong> If the measured and estimated values match within a tolerance band, the report is valid and paid out based on the measured value. If they don't match, it's flagged as suspicious and earns no reward.</p></div>
+                            </div>
+                            <div class="bars">
+                                <div class="bar-case ok">
+                                    <span class="case-label">Valid case</span>
+                                    <div class="bar-track">
+                                        <div class="bar-tol" style="left:30%; width:40%;"></div>
+                                        <div class="bar-fill measured" style="left:42%; height:34px;"></div>
+                                        <div class="bar-fill estimated" style="left:58%; height:38px;"></div>
+                                    </div>
+                                </div>
+                                <div class="bar-case bad">
+                                    <span class="case-label">Suspicious case</span>
+                                    <div class="bar-track">
+                                        <div class="bar-tol" style="left:30%; width:40%;"></div>
+                                        <div class="bar-fill measured" style="left:10%; height:48px;"></div>
+                                        <div class="bar-fill estimated" style="left:76%; height:20px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <h3>2. Where Another Blockchain's Traffic Travels</h3>
+                    <p class="section-note">This isn't about C-Project's own chain — it's about what happens when a node from any other blockchain uses this network instead of the Internet to talk to its peers.</p>
+
+                    <div class="tabs" role="tablist" aria-label="Compare network path">
+                        <button class="tab-btn" id="tab-btn-today" role="tab" aria-selected="true" aria-pressed="true" aria-controls="tab-today">Today: via the Internet</button>
+                        <button class="tab-btn" id="tab-btn-cproject" role="tab" aria-selected="false" aria-pressed="false" aria-controls="tab-cproject">With C-Project: via the parallel network</button>
+                    </div>
+
+                    <div class="diagram-frame">
+                        <figure id="tab-today" role="tabpanel" aria-labelledby="tab-btn-today">
+                            <svg viewBox="0 0 760 200" role="img" aria-label="Today: a Bitcoin node A goes through its operator's ISP, crosses the public Internet, goes through the destination's ISP, and reaches Bitcoin node B. Each ISP is a single point of passage.">
+                                <defs><marker id="arrow-t" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+                                <rect class="box" x="20" y="70" width="130" height="60" rx="6"/>
+                                <text class="lbl" x="85" y="96" text-anchor="middle">Bitcoin</text>
+                                <text class="lbl" x="85" y="116" text-anchor="middle">node A</text>
+
+                                <line class="flow-line flow-line-warn" x1="150" y1="100" x2="212" y2="100" marker-end="url(#arrow-t)"/>
+
+                                <rect class="box" x="214" y="70" width="110" height="60" rx="6" stroke="#e2665b"/>
+                                <text class="lbl-sm" x="269" y="96" text-anchor="middle">ISP</text>
+                                <text class="lbl-sm mono" x="269" y="114" text-anchor="middle">origin</text>
+
+                                <line class="flow-line flow-line-warn" x1="324" y1="100" x2="436" y2="100" marker-end="url(#arrow-t)"/>
+                                <text class="lbl-sm" x="380" y="88" text-anchor="middle">Public Internet</text>
+
+                                <rect class="box" x="438" y="70" width="110" height="60" rx="6" stroke="#e2665b"/>
+                                <text class="lbl-sm" x="493" y="96" text-anchor="middle">ISP</text>
+                                <text class="lbl-sm mono" x="493" y="114" text-anchor="middle">destination</text>
+
+                                <line class="flow-line flow-line-warn" x1="548" y1="100" x2="610" y2="100" marker-end="url(#arrow-t)"/>
+
+                                <rect class="box" x="612" y="70" width="128" height="60" rx="6"/>
+                                <text class="lbl" x="676" y="96" text-anchor="middle">Bitcoin</text>
+                                <text class="lbl" x="676" y="116" text-anchor="middle">node B</text>
+
+                                <text class="lbl-sm mono" x="380" y="160" text-anchor="middle" fill="#e2665b">each ISP is a single point of passage — it can filter, log, or cut the traffic</text>
+                            </svg>
+                            <figcaption>Today, P2P traffic for any blockchain — not just Bitcoin — depends on ISP infrastructure at each end.</figcaption>
+                        </figure>
+
+                        <figure id="tab-cproject" role="tabpanel" aria-labelledby="tab-btn-cproject" hidden>
+                            <svg viewBox="0 0 760 200" role="img" aria-label="With C-Project: Bitcoin node A connects to a local C-Project interface, which carries traffic through the mesh network formed by several interconnected C-Project nodes, and from there to another local interface that hands the traffic to Bitcoin node B. Transport inside the mesh is free.">
+                                <defs><marker id="arrow-c" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+                                <rect class="box" x="10" y="70" width="120" height="60" rx="6"/>
+                                <text class="lbl" x="70" y="96" text-anchor="middle">Bitcoin</text>
+                                <text class="lbl" x="70" y="116" text-anchor="middle">node A</text>
+
+                                <line class="flow-line flow-line-accent" x1="130" y1="100" x2="186" y2="100" marker-end="url(#arrow-c)"/>
+
+                                <rect class="box box-accent" x="188" y="76" width="96" height="48" rx="6"/>
+                                <text class="lbl-sm" x="236" y="104" text-anchor="middle">interface</text>
+
+                                <line class="flow-line flow-line-accent" x1="284" y1="100" x2="330" y2="100" marker-end="url(#arrow-c)"/>
+                                <text class="lbl-sm mono" x="307" y="86" text-anchor="middle" fill="var(--color-primary)">free</text>
+
+                                <circle class="box box-accent" cx="380" cy="60" r="16"/>
+                                <circle class="box box-accent" cx="430" cy="110" r="16"/>
+                                <circle class="box box-accent" cx="380" cy="150" r="16"/>
+                                <circle class="box box-accent" cx="440" cy="40" r="16"/>
+                                <line class="flow-line flow-line-accent" x1="380" y1="60" x2="430" y2="110"/>
+                                <line class="flow-line flow-line-accent" x1="430" y1="110" x2="380" y2="150"/>
+                                <line class="flow-line flow-line-accent" x1="380" y1="60" x2="440" y2="40"/>
+                                <line class="flow-line flow-line-accent" x1="440" y1="40" x2="430" y2="110"/>
+                                <line class="flow-line flow-line-accent" x1="380" y1="60" x2="380" y2="150"/>
+                                <text class="lbl-sm mono" x="408" y="185" text-anchor="middle">CJDNS mesh — C-Project nodes</text>
+
+                                <line class="flow-line flow-line-accent" x1="446" y1="100" x2="476" y2="100" marker-end="url(#arrow-c)"/>
+
+                                <rect class="box box-accent" x="478" y="76" width="96" height="48" rx="6"/>
+                                <text class="lbl-sm" x="526" y="104" text-anchor="middle">interface</text>
+
+                                <line class="flow-line flow-line-accent" x1="574" y1="100" x2="620" y2="100" marker-end="url(#arrow-c)"/>
+
+                                <rect class="box" x="622" y="70" width="128" height="60" rx="6"/>
+                                <text class="lbl" x="686" y="96" text-anchor="middle">Bitcoin</text>
+                                <text class="lbl" x="686" y="116" text-anchor="middle">node B</text>
+                            </svg>
+                            <figcaption>Any blockchain's traffic can cross C-Project's encrypted mesh instead of an ISP's backbone; an Internet gateway still exists as an option, not a requirement.</figcaption>
+                        </figure>
+                    </div>
+                </div>
+
+                <div class="section-block" style="margin-bottom:40px;">
+                    <h3>3. What Is Free and What Costs Tokens</h3>
+                    <p class="section-note">The network doesn't charge for existing; it charges for consuming another node's finite resources.</p>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h3>Always Free</h3>
+                            <ul>
+                                <li>Routing a message or a P2P connection through the mesh</li>
+                                <li>Layer-0 access for any external blockchain</li>
+                                <li>Discovery and addressing between nodes</li>
+                            </ul>
+                        </div>
+                        <div class="grid-item">
+                            <h3>Paid in Tokens</h3>
+                            <ul>
+                                <li>Dedicated storage for a third party's data</li>
+                                <li>Sustained compute on a specific node</li>
+                                <li>Guaranteed bandwidth / SLA</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Carbon Project. Building a decentralized future.</p>
+        </div>
+    </footer>
+
+    <script>
+    (function(){
+        try{
+            var trigger = document.getElementById('pog-trigger');
+            var detail = document.getElementById('pog-detail');
+            function toggle(){
+                var open = !detail.hidden;
+                detail.hidden = open;
+                trigger.setAttribute('aria-expanded', String(!open));
+            }
+            trigger.addEventListener('click', toggle);
+            trigger.addEventListener('keydown', function(e){
+                if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+            });
+        }catch(e){}
+
+        try{
+            var btnToday = document.getElementById('tab-btn-today');
+            var btnC = document.getElementById('tab-btn-cproject');
+            var panelToday = document.getElementById('tab-today');
+            var panelC = document.getElementById('tab-cproject');
+            function show(which){
+                var isToday = which === 'today';
+                panelToday.hidden = !isToday;
+                panelC.hidden = isToday;
+                btnToday.setAttribute('aria-pressed', String(isToday));
+                btnToday.setAttribute('aria-selected', String(isToday));
+                btnC.setAttribute('aria-pressed', String(!isToday));
+                btnC.setAttribute('aria-selected', String(!isToday));
+            }
+            btnToday.addEventListener('click', function(){ show('today'); });
+            btnC.addEventListener('click', function(){ show('cproject'); });
+        }catch(e){}
+    })();
+    </script>
+
+</body>
+</html>
